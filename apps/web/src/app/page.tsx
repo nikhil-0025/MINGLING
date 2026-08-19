@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { MessageSquare, Shield, Zap, Globe, ArrowRight, Sparkles, Hash, Lock, CheckCircle2 } from "lucide-react";
+import { MessageSquare, Shield, Zap, ArrowRight, Sparkles, Hash, Lock, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useSession } from "@/contexts/session-context";

@@ -63,15 +63,18 @@ export function registerConnectionHandlers(io: IOServer, socket: Socket<ClientTo
       }
 
       const participantIds = await redis.smembers(`room:${roomId}:participants`);
-      const users: any[] = [];
-      for (const pid of participantIds) {
-        const userData = await redis.hget('online_users', pid);
-        if (userData) {
-          const parsed = JSON.parse(userData);
-          users.push({ userId: pid, username: parsed.username, avatar: parsed.avatar });
-        }
+      if (participantIds.length > 0) {
+        const rawUsersData = await Promise.all(participantIds.map((pid) => redis.hget('online_users', pid)));
+        const users = rawUsersData
+          .filter(Boolean)
+          .map((data, idx) => {
+            const parsed = JSON.parse(data!);
+            return { userId: participantIds[idx], username: parsed.username, avatar: parsed.avatar };
+          });
+        socket.emit('online:users', { roomId, users });
+      } else {
+        socket.emit('online:users', { roomId, users: [] });
       }
-      socket.emit('online:users', { roomId, users });
 
       logger.info(`User ${userId} joined room ${roomId}`);
     } catch (error) {

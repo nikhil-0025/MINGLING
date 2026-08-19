@@ -15,7 +15,7 @@ export function startSessionExpiryJob() {
       const expiringSoon = await SessionModel.find({
         isActive: true,
         expiresAt: { $lte: warningTime, $gt: new Date() },
-      });
+      }).select('id expiresAt').lean();
 
       const io = getIO();
       for (const session of expiringSoon) {

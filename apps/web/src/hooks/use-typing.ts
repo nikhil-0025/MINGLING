@@ -30,6 +30,7 @@ export function useTyping(roomId: string | null) {
     socket.on('typing:stopped', handleTypingStopped);
 
     return () => {
+      if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
       socket.off('typing:started', handleTypingStarted);
       socket.off('typing:stopped', handleTypingStopped);
     };

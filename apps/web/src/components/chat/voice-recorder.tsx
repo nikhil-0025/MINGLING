@@ -1,63 +1,36 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useEffect } from "react";
 import { Mic, Square } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useVoiceRecorder } from "@/hooks/use-voice-recorder";
 
 interface VoiceRecorderProps {
   onSend: (blob: Blob) => void;
 }
 
 export function VoiceRecorder({ onSend }: VoiceRecorderProps) {
-  const [isRecording, setIsRecording] = useState(false);
-  const [recordTime, setRecordTime] = useState(0);
-  const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(null);
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const {
+    isRecording,
+    recordingTime,
+    audioBlob,
+    startRecording,
+    stopRecording,
+    clearRecording,
+  } = useVoiceRecorder();
 
   useEffect(() => {
+    if (audioBlob) {
+      onSend(audioBlob);
+      clearRecording();
+    }
+  }, [audioBlob, onSend, clearRecording]);
+
+  const toggleRecording = () => {
     if (isRecording) {
-      setRecordTime(0);
-      timerRef.current = setInterval(() => {
-        setRecordTime((prev) => prev + 1);
-      }, 1000);
+      stopRecording();
     } else {
-      if (timerRef.current) clearInterval(timerRef.current);
-    }
-    return () => {
-      if (timerRef.current) clearInterval(timerRef.current);
-    };
-  }, [isRecording]);
-
-  const handleStart = async () => {
-    if (isRecording) {
-      mediaRecorder?.stop();
-      return;
-    }
-
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const recorder = new MediaRecorder(stream);
-      const chunks: BlobPart[] = [];
-
-      recorder.ondataavailable = (event) => {
-        if (event.data.size > 0) {
-          chunks.push(event.data);
-        }
-      };
-
-      recorder.onstop = () => {
-        const blob = new Blob(chunks, { type: "audio/webm" });
-        onSend(blob);
-        stream.getTracks().forEach((track) => track.stop());
-        setIsRecording(false);
-        setMediaRecorder(null);
-      };
-
-      recorder.start();
-      setMediaRecorder(recorder);
-      setIsRecording(true);
-    } catch (err) {
-      console.warn("Microphone access failed:", err);
+      startRecording();
     }
   };
 
@@ -65,13 +38,13 @@ export function VoiceRecorder({ onSend }: VoiceRecorderProps) {
     <div className="flex items-center gap-1">
       {isRecording && (
         <span className="text-[10px] font-mono text-red-400 animate-pulse px-1.5 py-0.5 rounded bg-red-950/60 border border-red-800">
-          REC {recordTime}s
+          REC {recordingTime}s
         </span>
       )}
       <Button
         variant="ghost"
         size="icon"
-        onClick={handleStart}
+        onClick={toggleRecording}
         className={`shrink-0 h-9 w-9 rounded-lg transition-colors ${
           isRecording
             ? "bg-red-500/20 text-red-400 hover:bg-red-500/30"
@@ -84,3 +57,4 @@ export function VoiceRecorder({ onSend }: VoiceRecorderProps) {
     </div>
   );
 }
+

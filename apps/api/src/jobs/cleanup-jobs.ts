@@ -17,7 +17,7 @@ export function startCleanupJobs() {
       const expiredRooms = await RoomModel.find({
         isActive: true,
         updatedAt: { $lt: new Date(Date.now() - 24 * 60 * 60 * 1000) },
-      });
+      }).select('id').lean();
 
       for (const room of expiredRooms) {
         const isSaved = await SavedChatModel.exists({ roomId: room.id });

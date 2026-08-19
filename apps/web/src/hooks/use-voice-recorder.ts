@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useRef, useCallback } from "react"
+import { useState, useRef, useCallback, useEffect } from "react"
 
 interface VoiceRecorderState {
   isRecording: boolean
@@ -23,8 +23,23 @@ export function useVoiceRecorder() {
   const timerRef = useRef<NodeJS.Timeout | null>(null)
   const streamRef = useRef<MediaStream | null>(null)
 
+  useEffect(() => {
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current)
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach((track) => track.stop())
+      }
+      if (state.audioUrl) {
+        URL.revokeObjectURL(state.audioUrl)
+      }
+    }
+  }, [state.audioUrl])
+
   const startRecording = useCallback(async () => {
     try {
+      if (state.audioUrl) {
+        URL.revokeObjectURL(state.audioUrl)
+      }
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
       streamRef.current = stream
       const mediaRecorder = new MediaRecorder(stream, { mimeType: "audio/webm" })
@@ -45,13 +60,14 @@ export function useVoiceRecorder() {
       mediaRecorder.start(100)
       setState({ isRecording: true, recordingTime: 0, audioBlob: null, audioUrl: null, error: null })
 
+      if (timerRef.current) clearInterval(timerRef.current)
       timerRef.current = setInterval(() => {
         setState((prev) => ({ ...prev, recordingTime: prev.recordingTime + 1 }))
       }, 1000)
     } catch (err) {
       setState((prev) => ({ ...prev, error: "Microphone access denied" }))
     }
-  }, [])
+  }, [state.audioUrl])
 
   const stopRecording = useCallback(() => {
     if (mediaRecorderRef.current && mediaRecorderRef.current.state !== "inactive") {

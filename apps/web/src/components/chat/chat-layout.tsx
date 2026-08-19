@@ -4,15 +4,12 @@ import { useState } from "react"
 import { ChatSidebar } from "./chat-sidebar"
 import { ChatWindow } from "./chat-window"
 import { MobileNav } from "@/components/layout/mobile-nav"
-import { ProfileDrawer } from "@/components/layout/profile-drawer"
 import { SettingsPanel } from "@/components/layout/settings-panel"
-import { ThemeToggle } from "@/components/shared/theme-toggle"
 import { useRoom } from "@/hooks/use-room"
 import { cn } from "@/lib/utils"
 
 export function ChatLayout() {
   const { currentRoom } = useRoom()
-  const [showProfile, setShowProfile] = useState(false)
   const [showSettings, setShowSettings] = useState(false)
   const [showSidebar, setShowSidebar] = useState(false)
 
@@ -48,12 +45,7 @@ export function ChatLayout() {
         <ChatWindow room={currentRoom} />
       </div>
 
-      <div className="fixed top-2 right-2 z-30 lg:top-4 lg:right-4">
-        <ThemeToggle />
-      </div>
-
-      <ProfileDrawer isOpen={showProfile} onClose={() => setShowProfile(false)} />
       <SettingsPanel isOpen={showSettings} onClose={() => setShowSettings(false)} />
     </div>
   )
-}
+}

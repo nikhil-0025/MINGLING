@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useEffect, useRef, useState } from 'react';
+import React, { createContext, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { io, Socket } from 'socket.io-client';
 import { useSession } from './session-context';
 import type { ClientToServerEvents, ServerToClientEvents } from '@mingling/shared';
@@ -69,14 +69,17 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
     };
   }, [isAuthenticated, session?.token, validateSession]);
 
+  const value = useMemo(
+    () => ({
+      socket: socketRef.current,
+      isConnected,
+      isConnecting,
+    }),
+    [isConnected, isConnecting]
+  );
+
   return (
-    <SocketContext.Provider
-      value={{
-        socket: socketRef.current,
-        isConnected,
-        isConnecting,
-      }}
-    >
+    <SocketContext.Provider value={value}>
       {children}
     </SocketContext.Provider>
   );

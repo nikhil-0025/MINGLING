@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useCallback, useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Upload, X, File, Image, Music, Paperclip } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -15,6 +15,14 @@ export function FileDropzone({ roomId, onFileShared }: FileDropzoneProps) {
   const [isDragging, setIsDragging] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [preview, setPreview] = useState<{ file: File; url: string } | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (preview?.url) {
+        URL.revokeObjectURL(preview.url);
+      }
+    };
+  }, [preview?.url]);
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -34,6 +42,9 @@ export function FileDropzone({ roomId, onFileShared }: FileDropzoneProps) {
   }, []);
 
   const handleFile = (file: File) => {
+    if (preview?.url) {
+      URL.revokeObjectURL(preview.url);
+    }
     const url = URL.createObjectURL(file);
     setPreview({ file, url });
   };
