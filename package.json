@@ -4,6 +4,12 @@
   "version": "1.0.0",
   "description": "Privacy-first real-time messaging platform",
   "packageManager": "pnpm@11.20.0",
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "esbuild",
+      "mongodb-memory-server"
+    ]
+  },
   "scripts": {
     "dev": "turbo run dev",
     "build": "turbo run build",
